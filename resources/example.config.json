@@ -1,0 +1,5 @@
+{
+    "oauth": "oauth:<OAuth token>",
+    "username": "<Your Username>",
+    "channel": "<Channel name to connect to>"
+}
