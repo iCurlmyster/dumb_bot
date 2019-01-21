@@ -21,18 +21,19 @@ func main() {
 	fmt.Println("Connected!")
 	defer tw.Close()
 
-	cl := make(chan bool)
 	msgAlert := make(chan *parser.Msg)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
+
+	defer close(msgAlert)
 
 	pl, err := commands.LoadPlugins("./resources/plugins.json")
 	if err != nil {
 		log.Println(err)
 	}
 
-	go handleListenForMessages(msgAlert, tw, cl)()
+	go handleListenForMessages(msgAlert, tw)()
 
 	for {
 		select {
@@ -45,29 +46,22 @@ func main() {
 				}
 			}
 		case <-quit:
-			log.Println("calling close...")
 			tw.Close()
-			cl <- true
 			return
 		}
 	}
 }
 
-func handleListenForMessages(msgAlert chan *parser.Msg, tw *bot.Twitch, cl chan bool) func() {
+func handleListenForMessages(msgAlert chan *parser.Msg, tw *bot.Twitch) func() {
 	return func() {
 		for {
-			select {
-			case <-cl:
-				return
-			default:
-				b, err := tw.ListenForMessage()
-				if err != nil {
-					log.Fatalf("listen error: %v", err)
-				}
-				msg := parser.TwitchMessage(b)
-				if msg != nil {
-					msgAlert <- msg
-				}
+			b, err := tw.ListenForMessage()
+			if err != nil {
+				log.Fatalf("read error: %v", err)
+			}
+			msg := parser.TwitchMessage(b)
+			if msg != nil {
+				msgAlert <- msg
 			}
 		}
 	}

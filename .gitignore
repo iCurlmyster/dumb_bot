@@ -1,2 +1,5 @@
 resources/config.json
 plugins/**/*.so
+
+dumb_bot
+

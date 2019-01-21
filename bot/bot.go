@@ -2,7 +2,10 @@ package bot
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/iCurlmyster/dumb_bot/config"
@@ -17,6 +20,8 @@ type TwitchHandler interface {
 type Twitch struct {
 	client        *websocket.Conn
 	configuration *config.Config
+	ctx           context.Context
+	cancel        context.CancelFunc
 }
 
 // NewTwitchClient generates a new Twitch object with the passed in configurations
@@ -24,12 +29,15 @@ func NewTwitchClient(c *config.Config) *Twitch {
 	tw := &Twitch{
 		configuration: c,
 	}
-	conn, resp, err := websocket.DefaultDialer.Dial("wss://irc-ws.chat.twitch.tv:443", nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	conn, resp, err := websocket.DefaultDialer.DialContext(ctx, "wss://irc-ws.chat.twitch.tv:443", nil)
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
 	printReader(resp.Body)
+	tw.cancel = cancel
+	tw.ctx = ctx
 	tw.client = conn
 	passStr := fmt.Sprintf("PASS %s", tw.configuration.OAuth)
 	tw.client.WriteMessage(websocket.TextMessage, []byte(passStr))
@@ -48,11 +56,11 @@ func (tw *Twitch) WriteMessage(msg string) error {
 
 // ListenForMessage grabs the latest message from the websocket as a Buffer object
 func (tw *Twitch) ListenForMessage() (*bytes.Buffer, error) {
-	_, r, err := tw.client.NextReader()
+	_, msg, err := tw.client.ReadMessage()
 	if err != nil {
 		return nil, err
 	}
-	return printReader(r)
+	return bytes.NewBuffer(msg), nil
 }
 
 // Pong sends a pong message to the server
@@ -62,5 +70,10 @@ func (tw *Twitch) Pong() error {
 
 // Close handles closing internal client objects
 func (tw *Twitch) Close() {
+	log.Println("Closing connection")
+	if err := tw.client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
+		log.Printf("error closing: %v\n", err)
+	}
+	tw.cancel()
 	tw.client.Close()
 }
