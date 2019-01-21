@@ -35,5 +35,4 @@ If you add plugins you should add them to the Makefile so that when you run make
 
 ## TODOs
 - Add more functional plugins to the bot
-- Find more graceful way to close out of connection
 - Clean up where needed
