@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/iCurlmyster/dumb_bot/config"
@@ -29,7 +28,7 @@ func NewTwitchClient(c *config.Config) *Twitch {
 	tw := &Twitch{
 		configuration: c,
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	conn, resp, err := websocket.DefaultDialer.DialContext(ctx, "wss://irc-ws.chat.twitch.tv:443", nil)
 	if err != nil {
 		panic(err)
