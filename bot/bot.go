@@ -2,7 +2,6 @@ package bot
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"log"
 
@@ -19,8 +18,6 @@ type TwitchHandler interface {
 type Twitch struct {
 	client        *websocket.Conn
 	configuration *config.Config
-	ctx           context.Context
-	cancel        context.CancelFunc
 }
 
 // NewTwitchClient generates a new Twitch object with the passed in configurations
@@ -28,15 +25,12 @@ func NewTwitchClient(c *config.Config) *Twitch {
 	tw := &Twitch{
 		configuration: c,
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	conn, resp, err := websocket.DefaultDialer.DialContext(ctx, "wss://irc-ws.chat.twitch.tv:443", nil)
+	conn, resp, err := websocket.DefaultDialer.Dial("wss://irc-ws.chat.twitch.tv:443", nil)
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
 	printReader(resp.Body)
-	tw.cancel = cancel
-	tw.ctx = ctx
 	tw.client = conn
 	passStr := fmt.Sprintf("PASS %s", tw.configuration.OAuth)
 	tw.client.WriteMessage(websocket.TextMessage, []byte(passStr))
@@ -72,6 +66,5 @@ func (tw *Twitch) Close() {
 	if err := tw.client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
 		log.Printf("\033[0;31merror closing: %v\033[0m\n", err)
 	}
-	tw.cancel()
 	tw.client.Close()
 }
