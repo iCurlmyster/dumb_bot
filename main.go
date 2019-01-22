@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -18,7 +17,7 @@ func main() {
 		panic(err)
 	}
 	tw := bot.NewTwitchClient(c)
-	fmt.Println("Connected!")
+	log.Println("\033[0;36mConnected!\033[0m")
 	defer tw.Close()
 
 	msgAlert := make(chan *parser.Msg)
@@ -46,6 +45,7 @@ func main() {
 				}
 			}
 		case <-quit:
+			log.Println("\033[0;36mClosing connection\033[0m")
 			tw.Close()
 			return
 		}
@@ -57,7 +57,7 @@ func handleListenForMessages(msgAlert chan *parser.Msg, tw *bot.Twitch) func() {
 		for {
 			b, err := tw.ListenForMessage()
 			if err != nil {
-				log.Fatalf("read error: %v", err)
+				log.Fatalf("\033[0;31mread error: %v\033[0m", err)
 			}
 			msg := parser.TwitchMessage(b)
 			if msg != nil {

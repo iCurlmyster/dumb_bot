@@ -70,9 +70,8 @@ func (tw *Twitch) Pong() error {
 
 // Close handles closing internal client objects
 func (tw *Twitch) Close() {
-	log.Println("Closing connection")
 	if err := tw.client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
-		log.Printf("error closing: %v\n", err)
+		log.Printf("\033[0;31merror closing: %v\033[0m\n", err)
 	}
 	tw.cancel()
 	tw.client.Close()

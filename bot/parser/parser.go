@@ -91,7 +91,7 @@ func handleTmiMsg(b []byte) *Msg {
 			return nil
 		}
 		if code == 421 {
-			log.Println("Command was not recognized")
+			log.Println("\033[1;33mCommand was not recognized\033[0m")
 			return nil
 		}
 	} else {
