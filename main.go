@@ -9,6 +9,7 @@ import (
 	"github.com/iCurlmyster/dumb_bot/bot/commands"
 	"github.com/iCurlmyster/dumb_bot/bot/parser"
 	"github.com/iCurlmyster/dumb_bot/config"
+	"github.com/iCurlmyster/dumb_bot/text"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 		panic(err)
 	}
 	tw := bot.NewTwitchClient(c)
-	log.Println("\033[0;36mConnected!\033[0m")
+	log.Println(text.Cyan("Connected!"))
 	defer tw.Close()
 
 	msgAlert := make(chan *parser.Msg)
@@ -36,7 +37,10 @@ func main() {
 
 	for {
 		select {
-		case msg := <-msgAlert:
+		case msg, ok := <-msgAlert:
+			if !ok {
+				break
+			}
 			if msg.Type() == parser.PrivMsg {
 				pl.Execute(msg, tw)
 			} else if msg.Type() == parser.Ping {
@@ -45,9 +49,9 @@ func main() {
 				}
 			}
 		case <-quit:
-			log.Println("\033[0;36mClosing connection\033[0m")
+			log.Println(text.Cyan("Closing connection"))
 			tw.Close()
-			return
+			break
 		}
 	}
 }
@@ -57,7 +61,9 @@ func handleListenForMessages(msgAlert chan *parser.Msg, tw *bot.Twitch) func() {
 		for {
 			b, err := tw.ListenForMessage()
 			if err != nil {
-				log.Fatalf("\033[0;31mread error: %v\033[0m", err)
+				log.Fatalf(text.Red("read error: %v\n"), err)
+				close(msgAlert)
+				break
 			}
 			msg := parser.TwitchMessage(b)
 			if msg != nil {

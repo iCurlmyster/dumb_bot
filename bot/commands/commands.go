@@ -12,6 +12,7 @@ import (
 
 	"github.com/iCurlmyster/dumb_bot/bot"
 	"github.com/iCurlmyster/dumb_bot/bot/parser"
+	"github.com/iCurlmyster/dumb_bot/text"
 )
 
 // PluginHandler defines what a plugin should accept from the main program
@@ -64,7 +65,7 @@ func LoadPlugins(fileName string) (*Plugins, error) {
 
 // Execute tries to execute commands in a message
 func (p *Plugins) Execute(msg *parser.Msg, bot bot.TwitchHandler) {
-	log.Printf("- \033[0;33m%s\033[0m: \033[0;34m%s\033[0m\n", msg.Username(), msg.Message())
+	log.Printf("- %s: %s\n", text.Brown(msg.Username()), text.Blue(msg.Message()))
 	cmdMsg := strings.TrimSpace(msg.Message())
 	if !strings.HasPrefix(cmdMsg, "!") {
 		return

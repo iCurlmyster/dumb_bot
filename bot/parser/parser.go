@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/iCurlmyster/dumb_bot/text"
 )
 
 // MsgType represents Messages types that can be returned from twitch irc
@@ -91,7 +93,7 @@ func handleTmiMsg(b []byte) *Msg {
 			return nil
 		}
 		if code == 421 {
-			log.Println("\033[1;33mCommand was not recognized\033[0m")
+			log.Println(text.Yellow("Command was not recognized"))
 			return nil
 		}
 	} else {

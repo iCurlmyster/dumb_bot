@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/iCurlmyster/dumb_bot/config"
+	"github.com/iCurlmyster/dumb_bot/text"
 )
 
 // TwitchHandler defines what a plugin can expect to be able to interact with
@@ -64,7 +65,7 @@ func (tw *Twitch) Pong() error {
 // Close handles closing internal client objects
 func (tw *Twitch) Close() {
 	if err := tw.client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
-		log.Printf("\033[0;31merror closing: %v\033[0m\n", err)
+		log.Printf(text.Red("error closing: %v\n"), err)
 	}
 	tw.client.Close()
 }
