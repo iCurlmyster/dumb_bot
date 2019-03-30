@@ -35,10 +35,13 @@ func main() {
 
 	go handleListenForMessages(msgAlert, tw)()
 
+	done := false
+
 	for {
 		select {
 		case msg, ok := <-msgAlert:
 			if !ok {
+				done = true
 				break
 			}
 			if msg.Type() == parser.PrivMsg {
@@ -51,6 +54,9 @@ func main() {
 		case <-quit:
 			log.Println(text.Cyan("Closing connection"))
 			tw.Close()
+			done = true
+		}
+		if done {
 			break
 		}
 	}

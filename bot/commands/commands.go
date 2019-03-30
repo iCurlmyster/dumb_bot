@@ -82,6 +82,7 @@ func (p *Plugins) Execute(msg *parser.Msg, bot bot.TwitchHandler) {
 		go func() {
 			if err := v.Execute(msg.TrimMessagePrefix("!"+cmdMsg), bot); err != nil {
 				log.Println(err)
+				bot.WriteMessage("something went wrong with this command :(")
 			}
 		}()
 	}
